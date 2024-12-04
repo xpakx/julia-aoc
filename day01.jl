@@ -13,10 +13,13 @@ end
 sort!(arr1)
 sort!(arr2)
 
-println(arr1)
-println(arr2)
-
 diffs = abs.(arr2 .- arr1)
-
-println(diffs)
 println(sum(diffs))
+
+total = 0
+for element in arr1
+	count_of_elem = count(x -> x == element, arr2)
+	global total += count_of_elem * element
+end
+println(total)
+
