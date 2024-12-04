@@ -10,6 +10,13 @@ open(filename, "r") do file
 	push!(arr2, num2)
     end
 end
+sort!(arr1)
+sort!(arr2)
 
 println(arr1)
 println(arr2)
+
+diffs = abs.(arr2 .- arr1)
+
+println(diffs)
+println(sum(diffs))
