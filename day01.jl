@@ -16,10 +16,6 @@ sort!(arr2)
 diffs = abs.(arr2 .- arr1)
 println(sum(diffs))
 
-total = 0
-for element in arr1
-	count_of_elem = count(x -> x == element, arr2)
-	global total += count_of_elem * element
-end
-println(total)
+arr3 = map(x -> count(y -> y == x, arr2) * x, arr1)
+println(sum(arr3))
 
