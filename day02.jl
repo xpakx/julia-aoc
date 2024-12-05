@@ -23,3 +23,32 @@ for row in data
 end
 
 println(result)
+
+function test(arr)
+	steps = diff(arr)
+	step_check_row = abs.(steps) .<= 3 .&& abs.(steps) .>= 1
+	increasing_row = steps .> 0
+	decreasing_row = steps .< 0
+
+	step_check = all(step_check_row)
+	increasing = all(increasing_row)
+	decreasing  = all(decreasing_row)
+	return step_check && (increasing || decreasing) 
+end
+
+result = 0
+for row in data
+	if test(row)
+		global result += 1
+		continue
+	end
+	for i in 1:length(row)
+		to_test = [row[1:i-1]; row[i+1:end]]
+		if test(to_test)
+			global result += 1
+			break
+		end
+	end
+
+end
+println(result)
