@@ -79,3 +79,22 @@ for diag in eachdiag(data_matrix)
 	global result += count_xmas(diag)
 end
 println(result)
+
+result = 0
+for i in 2:length(data)-1
+	for j in 2:length(data[i])-1
+		if data[i][j] != 'A'
+			continue
+		end
+		d11 = data[i-1][j-1]
+		d12 = data[i+1][j+1]
+		d21 = data[i-1][j+1]
+		d22 = data[i+1][j-1]
+		if (d11 == 'S' && d12 == 'M') || (d11 == 'M' && d12 == 'S')
+			if (d21 == 'S' && d22 == 'M') || (d21 == 'M' && d22 == 'S')
+				global result += 1
+			end
+		end
+	end
+end
+println(result)
