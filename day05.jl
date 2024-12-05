@@ -41,3 +41,41 @@ for elem in data
 	end
 end
 println(result)
+
+
+function custom_sort(arr, rules)
+    function compare(x, y)
+        for rule in rules
+            if x == rule[1] && y == rule[2]
+                return false
+            elseif x == rule[2] && y == rule[1]
+                return true
+            end
+        end
+        return x < y ? false : true
+    end
+
+    return sort(arr, lt = compare)
+end
+
+result = 0
+for elem in data
+	correct = true
+	for rule in rules
+		position1 = findfirst(x -> x == rule[1], elem)
+		position2 = findfirst(x -> x == rule[2], elem)
+		if isnothing(position1) || isnothing(position2)
+			continue
+		end
+		if position1 >= position2 
+			correct = false
+			break
+		end
+	end
+	if !correct
+		sorted_arr = custom_sort(elem, rules)
+		middle_index = div(length(sorted_arr), 2) + 1
+		global result += sorted_arr[middle_index]
+	end
+end
+println(result)
