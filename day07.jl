@@ -12,78 +12,34 @@ open(filename, "r") do file
     end
 end
 
-function increment!(vec, base)
-    carry = 1
-    for i in length(vec):-1:1
-        vec[i] += carry
-        if vec[i] == base
-            vec[i] = 0
-            carry = 1
-        else
-            carry = 0
-            break
-        end
-    end
-    return vec
-end
-
-result = 0
-for elem in data
-	condition = elem[1]
+function test()
+	result = 0
+	for elem in data
+		condition = elem[1]
 	elements =  elem[2:end]
-	operations = zeros(length(elements)-1)
-	while true
-		index = 2
-		value = elements[1]
-		for op in operations
-			if op == 0
-				value += elements[index]
-			elseif op == 1
-				value *= elements[index]
-			end
-			index += 1
-		end
-		if value == condition
-			global result += condition
-			break
-		end
-		if operations == ones(length(elements)-1)
-			break
-		end
-		increment!(operations, 2)
-	end
-end
-println(result)
+	stack = [(condition, elements)]
+		while length(stack) > 0
+			(cond, nums) = pop!(stack)
+			if length(nums) == 1
+				if cond == nums[1]
+					result += condition
+					break
+				end
+			else
+				nums_curr = copy(nums)
+				last = pop!(nums_curr)
 
+				if cond - last > 0
+					push!(stack, (cond - last, nums_curr))
+				end
 
-result = 0
-for elem in data
-	condition = elem[1]
-	elements =  elem[2:end]
-	operations = zeros(length(elements)-1)
-	twoes = ones(length(elements)-1).*2
-	while true
-		index = 2
-		value = elements[1]
-		for op in operations
-			if op == 0
-				value += elements[index]
-			elseif op == 1
-				value *= elements[index]
-			elseif op == 2
-				order = 10^floor(Int, log10(elements[index]) + 1)
-				value = value * order + elements[index]
+				if iszero(cond % last)
+					push!(stack, (cond ÷ last, nums_curr))
+				end
 			end
-			index += 1
 		end
-		if value == condition
-			global result += condition
-			break
-		end
-		if operations == twoes
-			break
-		end
-		increment!(operations, 3)
 	end
+	return result
 end
-println(result)
+
+println(test())
