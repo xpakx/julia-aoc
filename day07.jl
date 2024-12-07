@@ -12,12 +12,19 @@ open(filename, "r") do file
     end
 end
 
-function test()
+function ends_with(num, ending)
+	mod(num, 10^floor(Int, log10(ending) + 1)) == ending
+end
+function remove_ending(num, ending)
+	return floor(Int, num ÷ 10^floor(Int, log10(ending) + 1))
+end
+
+function test(p2=false)
 	result = 0
 	for elem in data
 		condition = elem[1]
-	elements =  elem[2:end]
-	stack = [(condition, elements)]
+		elements =  elem[2:end]
+		stack = [(condition, elements)]
 		while length(stack) > 0
 			(cond, nums) = pop!(stack)
 			if length(nums) == 1
@@ -36,6 +43,10 @@ function test()
 				if iszero(cond % last)
 					push!(stack, (cond ÷ last, nums_curr))
 				end
+
+				if p2 && ends_with(cond, last)
+					push!(stack, (remove_ending(cond, last), nums_curr))
+				end
 			end
 		end
 	end
@@ -43,3 +54,4 @@ function test()
 end
 
 println(test())
+println(test(true))
