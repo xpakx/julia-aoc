@@ -12,13 +12,11 @@ open(filename, "r") do file
     end
 end
 
-println(data)
-
-function increment_binary!(vec)
+function increment!(vec, base)
     carry = 1
     for i in length(vec):-1:1
         vec[i] += carry
-        if vec[i] == 2
+        if vec[i] == base
             vec[i] = 0
             carry = 1
         else
@@ -52,7 +50,40 @@ for elem in data
 		if operations == ones(length(elements)-1)
 			break
 		end
-		increment_binary!(operations)
+		increment!(operations, 2)
 	end
 end
-print(result)
+println(result)
+
+
+result = 0
+for elem in data
+	condition = elem[1]
+	elements =  elem[2:end]
+	operations = zeros(length(elements)-1)
+	twoes = ones(length(elements)-1).*2
+	while true
+		index = 2
+		value = elements[1]
+		for op in operations
+			if op == 0
+				value += elements[index]
+			elseif op == 1
+				value *= elements[index]
+			elseif op == 2
+				order = 10^floor(Int, log10(elements[index]) + 1)
+				value = value * order + elements[index]
+			end
+			index += 1
+		end
+		if value == condition
+			global result += condition
+			break
+		end
+		if operations == twoes
+			break
+		end
+		increment!(operations, 3)
+	end
+end
+println(result)
