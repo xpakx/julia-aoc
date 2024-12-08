@@ -36,6 +36,7 @@ function add_antinode!(antinodes, point)
 end
 
 antinodes = Set{Tuple{Int, Int}}()
+equations = Vector{Tuple{Float32, Int, Int}}()
 result = 0
 for char in keys(grouped)
 	positons = grouped[char]
@@ -49,6 +50,11 @@ for char in keys(grouped)
 			point2 = (second[1] + dx, second[2] + dy)
 			add_antinode!(antinodes, point)
 			add_antinode!(antinodes, point2)
+
+			# part2
+			slope = (point2[2] - point[2])/(point2[1]-point[1])
+			equation = (slope, point[1], point[2])
+			push!(equations, equation)
 		end
 	end
 end
@@ -75,3 +81,28 @@ for i in 1:dim
 	end
 	println()
 end
+
+# part2
+function check_point_on_line(m, n, equations)
+    for (slope, x1, y1) in equations
+        expected_y = slope * (m - x1) + y1
+        if isapprox(n, expected_y, atol=1e-5)
+            return true
+        end
+    end
+    return false
+end
+
+result = 0
+for i in 1:dim
+	for j in 1:dim
+		if check_point_on_line(j, i, equations)
+			print("#")
+			global result += 1
+		else
+			print(".")
+		end
+	end
+	println()
+end
+print(result)
