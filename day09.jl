@@ -4,11 +4,8 @@ chars = collect(file_content)
 nums = map(x -> parse(Int, x), chars)
 files = nums[1:2:end]
 spaces = nums[2:2:end]
-println(files)
-println(spaces)
 
 empty_spaces = sum(spaces)
-println(empty_spaces)
 
 file_num = 0
 i = 1
@@ -65,47 +62,49 @@ i = 1
 j = length(files)
 result = 0
 
-spacedict = Dict{Int, Vector{Tuple{Int, Int}}}() # space num to list of (block_num, length)
-for a in j:-1:2
-	files[a]
-	for b in eachindex(spaces)
-		if files[a] <= spaces[b]
-			spaces[b] -= files[a]
-			if haskey(spacedict, b)
-				push!(spacedict[b], (a-1, files[a]))
+
+files2 = Vector{Tuple{Int, Int}}()
+spaces2 = Vector{Tuple{Int, Int}}()
+
+block_num = 0
+for (i, count) in enumerate(nums)
+	tup = (block_num, count)
+	if isodd(i-1)
+		push!(spaces2, tup)
+	else
+		push!(files2, tup)
+	end
+	global block_num += count
+end
+
+result = 0
+for (i, file) in enumerate(reverse(files2))
+	local file_num = (length(files2) - i)
+	file_start = file[1]
+	file_len = file[2]
+
+	for (i, space) in enumerate(spaces2)
+		space_start = space[1]
+		space_len = space[2]
+		if space_start > file_start
+			break
+		end
+
+		if space_len >= file_len
+			files2[file_num + 1] = (space_start, file_len)
+			if space_len == file_len
+				deleteat!(spaces2, i)
 			else
-				spacedict[b] = [(a-1, files[a])]
+				spaces2[i] = (space_start + file_len, space_len - file_len)
 			end
-			files[a] = 0
 			break
 		end
 	end
+
+	file = files2[file_num + 1]
+	for i in file[1]:(file[1] + file[2] - 1)
+		global result += file_num * i
+	end
 end
 
-for i in eachindex(files)
-	if files[i] == 0 
-		global file_num += orig[i]
-	end
-	for _ in 1:files[i]
-		global result += (i-1)*file_num
-		global file_num += 1
-		print("$file_num * ", i-1, " = ", result, ", ")
-	end
-
-	if haskey(spacedict, i)
-		for (block_num, len) in spacedict[i]
-			for _ in 1:len
-				global result += block_num*file_num
-				global file_num += 1
-				print("$file_num * ", block_num, " = ", result, ", ")
-			end
-
-		end
-	end
-	if i <= length(spaces)
-		global file_num += spaces[i]
-	end
-end
-println()
-print(files)
-print(result)
+println(result)
