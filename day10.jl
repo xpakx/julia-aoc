@@ -16,7 +16,7 @@ function get(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int})
 end
 
 function find_path(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int}, mem::Set{Tuple{Int, Int}})
-	if get(terrain, start) == 9 && !(start in mem)
+	if get(terrain, start) == 9
 		push!(mem, start)
 		return 1
 	end
