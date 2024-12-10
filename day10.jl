@@ -13,29 +13,24 @@ function get(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int})
 	return terrain[start[1]][start[2]]
 end
 
+function check(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int}, mem::Set{Tuple{Int, Int}}, delta::Tuple{Int, Int}, p2::Bool=false)
+	next = start .+ delta
+	if is_within_bounds(terrain, next) && get(terrain, start) + 1 == get(terrain, next)
+		return find_path(terrain, next, mem, p2)
+	end
+	return 0
+end
+
 function find_path(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int}, mem::Set{Tuple{Int, Int}}, p2::Bool=false)
 	if get(terrain, start) == 9 && (p2 || !(start in mem))
 		push!(mem, start)
 		return 1
 	end
-
 	paths = 0
-	up = start .+ (1, 0)
-	if is_within_bounds(terrain, up) && get(terrain, start) + 1 == get(terrain, up)
-		paths += find_path(terrain, up, mem, p2)
-	end
-	down = start .- (1, 0)
-	if is_within_bounds(terrain, down) && get(terrain, start) + 1 == get(terrain, down)
-		paths += find_path(terrain, down, mem, p2)
-	end
-	right = start .+ (0, 1)
-	if is_within_bounds(terrain, right) && get(terrain, start) + 1 == get(terrain, right)
-		paths += find_path(terrain, right, mem, p2)
-	end
-	left = start .- (0, 1)
-	if is_within_bounds(terrain, left) && get(terrain, start) + 1 == get(terrain, left)
-		paths += find_path(terrain, left, mem, p2)
-	end
+	paths += check(terrain, start, mem, (1, 0), p2)
+	paths += check(terrain, start, mem, (-1, 0), p2)
+	paths += check(terrain, start, mem, (0, 1), p2)
+	paths += check(terrain, start, mem, (0, -1), p2)
 	return paths
 end
 
