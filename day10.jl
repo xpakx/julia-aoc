@@ -4,8 +4,6 @@ lines = split(file_content, '\n')
 pop!(lines)
 terrain = [[parse(Int, char) for char in line] for line in lines]
 
-println(terrain)
-
 function is_within_bounds(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int})
     row, col = start
     return 1 <= row <= size(terrain, 1) && 1 <= col <= size(terrain[1], 1)
@@ -15,8 +13,8 @@ function get(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int})
 	return terrain[start[1]][start[2]]
 end
 
-function find_path(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int}, mem::Set{Tuple{Int, Int}})
-	if get(terrain, start) == 9
+function find_path(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int}, mem::Set{Tuple{Int, Int}}, p2::Bool=false)
+	if get(terrain, start) == 9 && (p2 || !(start in mem))
 		push!(mem, start)
 		return 1
 	end
@@ -24,29 +22,33 @@ function find_path(terrain::Vector{Vector{Int}}, start::Tuple{Int, Int}, mem::Se
 	paths = 0
 	up = start .+ (1, 0)
 	if is_within_bounds(terrain, up) && get(terrain, start) + 1 == get(terrain, up)
-		paths += find_path(terrain, up, mem)
+		paths += find_path(terrain, up, mem, p2)
 	end
 	down = start .- (1, 0)
 	if is_within_bounds(terrain, down) && get(terrain, start) + 1 == get(terrain, down)
-		paths += find_path(terrain, down, mem)
+		paths += find_path(terrain, down, mem, p2)
 	end
 	right = start .+ (0, 1)
 	if is_within_bounds(terrain, right) && get(terrain, start) + 1 == get(terrain, right)
-		paths += find_path(terrain, right, mem)
+		paths += find_path(terrain, right, mem, p2)
 	end
 	left = start .- (0, 1)
 	if is_within_bounds(terrain, left) && get(terrain, start) + 1 == get(terrain, left)
-		paths += find_path(terrain, left, mem)
+		paths += find_path(terrain, left, mem, p2)
 	end
 	return paths
 end
 
+function solve(terrain, starts, p2::Bool=false)
+	result = 0
+	for position in starts 
+		score = find_path(terrain, position, Set{Tuple{Int, Int}}(), p2)
+		result += score
+	end
+	return result
+end
+
 starts = [(i, j) for i in eachindex(terrain) for j in eachindex(terrain[i]) if terrain[i][j] == 0]
 
-result = 0
-for position in starts 
-	score = find_path(terrain, position, Set{Tuple{Int, Int}}())
-	global result += score
-	println("$position,  $score")
-end
-println(result)
+println(solve(terrain, starts))
+println(solve(terrain, starts, true))
