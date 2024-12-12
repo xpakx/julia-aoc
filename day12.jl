@@ -127,7 +127,72 @@ function scan(terrain::Vector{Vector{Char}})::Int
 	return sum(perimeters .* areas)
 end
 
-visited = Vector{Vector{Int}}()
-visited = [fill(0, length(subvec)) for subvec in chars]
-println(trace((1,1), chars, visited, 1))
+
+function flood_fill(start::Tuple{Int, Int}, terrain::Vector{Vector{Char}}, visited::Vector{Vector{Bool}})::Int
+	letter = get(terrain, start)
+	perimeter = 0
+	area = 0
+	to_fill = [start]
+	visited[start[1]][start[2]] = true
+	while length(to_fill) > 0
+		pos = pop!(to_fill)
+		top = pos .+ (-1, 0)
+		down = pos .+ (1, 0)
+		right = pos .+ (0, 1)
+		left = pos .+ (0, -1)
+		println("=>$pos")
+
+		if is_within_bounds(terrain, top) && !visited[top[1]][top[2]] && get(terrain, top) == letter
+			push!(to_fill, top)
+			visited[top[1]][top[2]] = true
+		end
+		if is_within_bounds(terrain, down) && !visited[down[1]][down[2]] && get(terrain, down) == letter
+			push!(to_fill, down)
+			visited[down[1]][down[2]] = true
+		end
+		if is_within_bounds(terrain, right) && !visited[right[1]][right[2]] && get(terrain, right) == letter
+			push!(to_fill, right)
+			visited[right[1]][right[2]] = true
+		end
+		if is_within_bounds(terrain, left) && !visited[left[1]][left[2]] && get(terrain, left) == letter
+			push!(to_fill, left)
+			visited[left[1]][left[2]] = true
+		end
+
+		area += 1
+		if !is_within_bounds(terrain, top) || get(terrain, top) != letter
+			perimeter += 1
+		end
+		if !is_within_bounds(terrain, down) || get(terrain, down) != letter
+			perimeter += 1
+		end
+		if !is_within_bounds(terrain, right) || get(terrain, right) != letter
+			perimeter += 1
+		end
+		if !is_within_bounds(terrain, left) || get(terrain, left) != letter
+			perimeter += 1
+		end
+	end
+	println(area, " ", perimeter)
+	return area * perimeter
+end
+
+function scan_fill(terrain::Vector{Vector{Char}})::Int
+	visited = Vector{Vector{Bool}}()
+	visited = [fill(false, length(subvec)) for subvec in terrain]
+	result = 0
+	for (i, row) in enumerate(terrain)
+		for (j, field) in enumerate(row) 
+			if visited[i][j]
+				continue
+			end
+			letter = get(terrain, (i, j))
+			result += flood_fill((i,j), terrain, visited)
+		end
+	end
+	return result
+end
+
+
+println(scan_fill(chars))
 # print(scan(chars))
