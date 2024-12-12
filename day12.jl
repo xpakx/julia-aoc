@@ -17,6 +17,11 @@ function check(terrain::Vector{Vector{Char}}, pos::Tuple{Int, Int}, delta::Tuple
 	return is_within_bounds(terrain, next) && get(terrain, next) == letter
 end
 
+function check(terrain::Vector{Vector{Char}}, pos::Tuple{Int, Int})::Bool
+	letter = get(terrain, pos)
+	return check(terrain, pos, (-1,0), letter)
+end
+
 function add(a::Tuple{Int, Int}, b::Tuple{Int, Int})
     (a[1] - b[1], a[2] + b[2])
 end
@@ -43,49 +48,58 @@ function to_dir(dir)
 	end
 end
 
-function trace(start::Tuple{Int, Int}, terrain::Vector{Vector{Char}})::Int
+function trace(start::Tuple{Int, Int}, terrain::Vector{Vector{Char}}, visited::Vector{Vector{Int}}, id::Int)::Int
 	letter = get(terrain, start)
 	perimeter = 0
 	pos = start
 	dir = (0, 1)
 	side = (1, 0)
 	while (pos != start || side != (1, 0)) || perimeter == 0
-		println("$pos, side: $side (", to_dir(side), "), dir: $dir (", to_dir(dir), ")")
+		visited[pos[1]][pos[2]] = id
 		perimeter += 1
 
 		next = rotate(side)
-		println(to_dir(next))
 		test_pos = add(pos, next)
-		println("to test: ",test_pos)
 		if !is_within_bounds(terrain, test_pos) || get(terrain, test_pos) != letter
-			println("normal")
 			side = next
 			dir = rotate(dir)
 			continue
 		end
 		diag = add(add(pos, dir), side)
-		println("diag", diag)
 		if is_within_bounds(terrain, diag) && get(terrain, diag) == letter
-			println("diag")
 			pos = diag
 			dir = revert(rotate(dir))
 			side = revert(rotate(side))
 			continue
 		end
 		pos = add(pos, dir)
-		println("side",pos)
 	end
 	return perimeter
 
 end
 
+function scan(terrain::Vector{Vector{Char}})::Int
+	visited = Vector{Vector{Int}}()
+	visited = [fill(0, length(subvec)) for subvec in terrain]
+	perimeters = Vector{Int}()
+	id = 1
+	for (i, row) in enumerate(terrain)
+		for (j, field) in enumerate(row) 
+			if check(terrain, (i,j))
+				continue
+			end
+			if visited[i][j] > 0
+				continue
+			end
+			letter = get(terrain, (i, j))
+			perimeter = trace((i,j), terrain, visited, id)
+			id += 1
+			println("$letter: $perimeter")
+			push!(perimeters, perimeter)
+		end
+	end
+	return sum(perimeters)
+end
+
 println(chars)
-result = 0
-result += trace((1,1), chars)
-result += trace((2,1), chars)
-result += trace((2,3), chars)
-result += trace((2,4), chars)
-result += trace((4,1), chars)
-
-println(result)
-
+print(scan(chars))
