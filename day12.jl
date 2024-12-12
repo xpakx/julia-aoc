@@ -17,7 +17,7 @@ function add(a::Tuple{Int, Int}, b::Tuple{Int, Int})
 end
 
 function move(pos::Tuple{Int, Int}, terrain::Vector{Vector{Char}}, visited::Vector{Vector{Bool}}, to_fill, letter::Char)
-	if is_within_bounds(terrain, pos) && !visited[pos[1]][pos[2]] && get(terrain, pos) == letter
+	if is_within_bounds(terrain, pos) && !(visited[pos[1]][pos[2]]) && get(terrain, pos) == letter
 		push!(to_fill, pos)
 		visited[pos[1]][pos[2]] = true
 	end
@@ -62,6 +62,12 @@ function check_corners(pos::Tuple{Int, Int}, terrain::Vector{Vector{Char}}, lett
 			if pos1 == pos2
 				result += 1
 			end
+		else
+			pos1 = check_free(add(pos, (c[1], 0)), terrain, letter)
+			pos2 = check_free(add(pos, (0, c[2])), terrain, letter)
+			if pos1 == pos2 == 1
+				result += 1
+			end
 		end
 	end
 	return result
@@ -74,7 +80,7 @@ function scan_fill(terrain::Vector{Vector{Char}})::Tuple{Int,Int}
 	result2 = 0
 	for (i, row) in enumerate(terrain)
 		for j in eachindex(row) 
-			if visited[i][j]
+			if visited[i][j] > 0
 				continue
 			end
 			(area, perimeter, corners) = flood_fill((i,j), terrain, visited)
@@ -87,4 +93,3 @@ end
 
 
 println(scan_fill(chars))
-# print(scan(chars))
