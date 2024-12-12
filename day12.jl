@@ -57,6 +57,7 @@ function trace(start::Tuple{Int, Int}, terrain::Vector{Vector{Char}}, visited::V
 	while (pos != start || side != (1, 0)) || perimeter == 0
 		visited[pos[1]][pos[2]] = id
 		perimeter += 1
+		println(pos, " ", to_dir(side), " ", to_dir(dir))
 
 		next = rotate(side)
 		test_pos = add(pos, next)
@@ -75,13 +76,13 @@ function trace(start::Tuple{Int, Int}, terrain::Vector{Vector{Char}}, visited::V
 		pos = add(pos, dir)
 	end
 	return perimeter
-
 end
 
 function scan(terrain::Vector{Vector{Char}})::Int
 	visited = Vector{Vector{Int}}()
 	visited = [fill(0, length(subvec)) for subvec in terrain]
 	perimeters = Vector{Int}()
+	letters = Vector{Char}()
 	id = 1
 	for (i, row) in enumerate(terrain)
 		for (j, field) in enumerate(row) 
@@ -94,12 +95,39 @@ function scan(terrain::Vector{Vector{Char}})::Int
 			letter = get(terrain, (i, j))
 			perimeter = trace((i,j), terrain, visited, id)
 			id += 1
-			println("$letter: $perimeter")
 			push!(perimeters, perimeter)
+			push!(letters, letter)
 		end
 	end
-	return sum(perimeters)
+
+	areas = zeros(Int, length(perimeters))
+	for (i, row) in enumerate(terrain)
+		last = 0
+		active = 0
+		for (j, field) in enumerate(row) 
+			curr = visited[i][j]
+			print(curr > 1 ? '.' : '1')
+			if curr != 0
+				if curr != last
+					active = curr
+				end
+			end
+			last = curr
+
+			if active != 0
+				areas[active] += 1
+			end
+		end
+		println()
+	end
+
+	for i in eachindex(areas)
+		println(letters[i], ": ", areas[i], " ", perimeters[i])
+	end
+	return sum(perimeters .* areas)
 end
 
-println(chars)
-print(scan(chars))
+visited = Vector{Vector{Int}}()
+visited = [fill(0, length(subvec)) for subvec in chars]
+println(trace((1,1), chars, visited, 1))
+# print(scan(chars))
