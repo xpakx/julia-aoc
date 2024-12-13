@@ -25,10 +25,18 @@ function solve(game::Game)::Tuple{Int, Int}
 	return (n_numerator/det, m_numerator/det)
 end
 
+function correct_conversion(game::Game)
+	Δ = (10000000000000, 10000000000000)
+	return (game[1], game[2], (game[3] .+ Δ))
+end
+
 cost(solution) = 3*solution[1] + solution[2] 
 
 games = map(parse_game, content)
 solutions = map(solve, games)
 result = sum(map(cost, filter(x -> x[1] > 0, solutions)))
 println(result)
-
+games2 = map(correct_conversion, games)
+solutions = map(solve, games2)
+result = sum(map(cost, filter(x -> x[1] > 0, solutions)))
+println(result)
