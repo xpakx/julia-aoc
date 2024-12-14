@@ -37,3 +37,31 @@ data = read_file(filename)
 positions = map(x -> simulate(x, 100, width, height), data)
 results  = reduce_quadrants(positions, width, height)
 println(reduce(*, results))
+
+function is_symmetric(points::Vector{Tuple{Int, Int}}, xn::Int)::Bool
+    point_set = Set(points)
+    
+    for (x, y) in points
+        mirrored = (2 * xn - x, y)
+	if !(mirrored in point_set)
+            return false
+        end
+    end
+    return true
+end
+
+function search(robots::Vector{Robot}, width::Int, height::Int) 
+	sec = 0
+	while true
+		sec += 1
+		new_robots = Vector{Robot}()
+		points = map(x -> simulate(x, sec, width, height), data)
+		for i in 0:width
+			if is_symmetric(points, i)
+				println(sec)
+				break
+			end
+		end
+	end
+end
+search(data, width, height)
