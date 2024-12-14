@@ -38,29 +38,53 @@ positions = map(x -> simulate(x, 100, width, height), data)
 results  = reduce_quadrants(positions, width, height)
 println(reduce(*, results))
 
-function is_symmetric(points::Vector{Tuple{Int, Int}}, xn::Int)::Bool
-    point_set = Set(points)
-    
-    for (x, y) in points
-        mirrored = (2 * xn - x, y)
-	if !(mirrored in point_set)
-            return false
-        end
-    end
-    return true
+function count_clustered(points::Vector{Tuple{Int, Int}})::Float64
+	dirs = [(1,0), (-1,0), (0,1), (0,-1)]
+	touching = 0
+	for point in points
+		for dir in dirs
+			if (point .+ dir) in points
+				touching += 1
+			end
+		end
+	end
+	return touching
+end
+
+function print_points(points::Vector{Tuple{Int, Int}})
+	sorted_points = sort(points, by = x -> (x[1], x[2]))
+
+	min_x = minimum(x[1] for x in sorted_points)
+	max_x = maximum(x[1] for x in sorted_points)
+	min_y = minimum(x[2] for x in sorted_points)
+	max_y = maximum(x[2] for x in sorted_points)
+
+	point_set = Set(sorted_points)
+
+	for y in reverse(min_y:max_y)
+	    for x in min_x:max_x
+		if (x, y) in point_set
+		    print("*")
+		else
+		    print(" ")
+		end
+	    end
+	    println() 
+	end
 end
 
 function search(robots::Vector{Robot}, width::Int, height::Int) 
 	sec = 0
+	heuristic = 2*length(robots)
 	while true
 		sec += 1
-		new_robots = Vector{Robot}()
 		points = map(x -> simulate(x, sec, width, height), data)
-		for i in 0:width
-			if is_symmetric(points, i)
-				println(sec)
-				break
-			end
+		curr_heuristic = count_clustered(points)
+		if curr_heuristic > heuristic
+			print_points(points)
+			println(curr_heuristic)
+			println(sec)
+			break
 		end
 	end
 end
