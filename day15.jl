@@ -37,7 +37,7 @@ function set!(board::Map, pos::Tuple{Int, Int}, value::Field)
 end
 
 function step!(board::Map, dirs::Vector{Dir}, step_num::Int, player::Tuple{Int, Int})
-	num = step_num % length(dirs)
+	num = ((step_num-1) % length(dirs)) + 1
 	dir = dirs[num]
 	dir_coord = dir_to_coord(dir)
 	new_pos = player .+ dir_coord
@@ -62,13 +62,21 @@ function step!(board::Map, dirs::Vector{Dir}, step_num::Int, player::Tuple{Int, 
 	end
 end
 
+function simulate1!(board::Map, dirs::Vector{Dir})
+	player = [(i, j) for (i, row) in enumerate(board) for (j, val) in enumerate(row) if val == Player][1]
+	for i in eachindex(dirs)
+		player = step!(board, dirs, i, player)
+	end
+end
+
+function calculate_gps(board::Map)
+	boxes = [(i, j) for (i, row) in enumerate(board) for (j, val) in enumerate(row) if val == Box]
+	values = [(i-1)*100 + j-1 for (i,j) in boxes]
+	return sum(values)
+end
 
 filename = "data/data15.txt"
-data = read_file(filename)
-player = [(i, j) for (i, row) in enumerate(data[1]) for (j, val) in enumerate(row) if val == Player][1]
-println(data)
-println(player)
-for i in 1:10
-	global player = step!(data[1], data[2], i, player)
-	println(player)
-end
+(board, dirs) = read_file(filename)
+simulate1!(board, dirs)
+println(calculate_gps(board))
+
