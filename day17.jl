@@ -74,8 +74,38 @@ function run(program::Vector{Int})
 	end
 end
 
+function search(program, n::Int, d::Int)::Int
+	results = Int[]
+	if d == -1 
+		return n
+	end
+	for i in 0:8
+		curr_n = n + i*8^d
+		global A = curr_n
+		global B = 0
+		global C = 0
+		global output = Int[]
+		run(program)
+		if length(output) != length(program)
+			continue
+		end
+		if output[d+1] == program[d+1]
+			res =  search(program, curr_n, d-1)
+			if res != 0
+				push!(results,res)
+			end
+		end
+	end
+	if length(results) == 0
+		return 0
+	end
+	return minimum(results)
+end
+
 program = load_program("data/data17.txt")
 println(program)
 run(program)
 println("$A, $B, $C")
 println(output)
+
+println(search(program, 0, length(program)-1))
