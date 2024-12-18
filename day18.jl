@@ -64,11 +64,28 @@ function dijkstra(obstacles::Set{Pos}, start::Pos, max_coord::Int)::Int
 			end
 		end
 	end
+	return -1
+end
+
+function find_blockade(obstacles::Vector{Pos}, start::Pos, max_coord::Int)::Pos
+	finish = (max_coord, max_coord)
+	left = 1
+	right = length(obstacles)
+	while left < right
+		mid = (left+right)÷2
+		obs = Set(obstacles[1:mid])
+		if dijkstra(obs, start, max_coord) < 0
+			right = mid
+		else
+			left = mid + 1
+		end
+	end
+	return obstacles[left]
 end
 
 size = 70
 bytes_to_simulate = 1024
 filename = "data/data18.txt"
 bytes = get_map(filename)
-println(bytes)
 println(dijkstra(Set(bytes[1:bytes_to_simulate]), (0,0), size))
+println(find_blockade(bytes, (0,0), size))
