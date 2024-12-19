@@ -61,8 +61,37 @@ function solve1(patterns::Vector{Vector{Char}}, towels::Dict{Char, Vector{Vector
 	return result
 end
 
+function check2(pattern::Vector{Char}, towels::Vector{Vector{Char}}, cache::Dict{Vector{Char},Int})::Int
+	if length(pattern) == 0
+		return 1
+	end
+	if haskey(cache, pattern)
+		return cache[pattern]
+	end
+	count = 0
+	for towel in towels
+		if check(pattern, towel, 1)
+			remaining = pattern[length(towel) + 1:end]
+			count += check2(remaining, towels, cache)
+		end
+	end
+	cache[pattern] = count 
+	return count
+end
+
+function solve2(patterns::Vector{Vector{Char}}, towels::Vector{Vector{Char}})::Int
+	result = 0
+
+	for pattern in patterns
+		result += check2(pattern, towels, Dict{Vector{Char}, Int}())
+	end
+
+	return result
+end
+
 (towels, patterns) = read_file("data/data19.txt")
 towel_dict = to_towel_dict(towels)
 println(solve1(patterns, towel_dict))
+println(solve2(patterns, towels))
 
 
