@@ -16,7 +16,15 @@ function get(board::Map, pos::Pos)::Field
 	return board[pos[1]][pos[2]]
 end
 
-function find_path(board::Map, start::Pos)::Int
+function taxicab_dist(p1::Pos, p2::Pos)::Int
+    return abs(p2[1] - p1[1]) + abs(p2[2] - p1[2])
+end
+
+function filter_neighbors(pos::Pos, candidates::Vector{Pos}, d::Int)::Vector{Pos}
+	return filter(x -> taxicab_dist(pos, x) <= d, candidates)
+end
+
+function find_path(board::Map, start::Pos, cheat::Int=2)::Int
 	pos = start
 	dirs = [(1,0), (-1,0), (0,1), (0,-1)]
 	path = Vector{Pos}()
@@ -38,24 +46,22 @@ function find_path(board::Map, start::Pos)::Int
 
 	fin = [(i, j) for (i, row) in enumerate(board) for (j, val) in enumerate(row) if val == End][1]
 	d[fin] = 0
+	path2 = vcat(path, fin)
 
 	dist = 0
-	steps = [(x * i, y * i) for (x, y) in dirs for i in 1:2]
-	append!(steps, [(1,1), (-1,-1), (1,-1), (-1,1)])
 	savings = Dict{Int, Int}()
+				
 	for node in path
 		dist += 1
-		neighbors = map(x -> x .+ node, steps)
+		neighbors = filter_neighbors(node, path2, cheat)
 		for n in neighbors
-			if haskey(d, n)
-				cost = d[n] + 1
-				if dist + cost < length(path)
-					saving = length(path) - (dist + cost)
-					if haskey(savings, saving)
-						savings[saving] += 1
-					else
-						savings[saving] = 1
-					end
+			cost = d[n] + taxicab_dist(node, n) - 1
+			if dist + cost < length(path)
+				saving = length(path) - (dist + cost)
+				if haskey(savings, saving)
+					savings[saving] += 1
+				else
+					savings[saving] = 1
 				end
 			end
 		end
@@ -74,3 +80,4 @@ filename = "data/data20.txt"
 board = get_map(filename)
 start = [(i, j) for (i, row) in enumerate(board) for (j, val) in enumerate(row) if val == Start][1]
 println(find_path(board, start))
+println(find_path(board, start, 20))
