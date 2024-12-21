@@ -28,40 +28,15 @@ function calc_distances(panel::Panel)::Dict{Char, Pos}
 	return dist
 end
 
-function optimal_order(dx::Int, dy::Int)::Vector{Char}
-	result = []
-	if dx > 0
-		append!(result, fill('<', dx))
-	end
-	if dy < 0
-		append!(result, fill('v', -dy))
-	end
-	if dy > 0
-		append!(result, fill('^', dy))
-	end
-	if dx < 0
-		append!(result, fill('>', -dx))
-	end
-	return result
-end
-
-function up_first(dx::Int, dy::Int)::Vector{Char}
-	ree = fill('^', dy)
-	append!(ree, fill(dx>0 ? '<' : '>', abs(dx)))
-	return ree
-end
-
-function down_first(dx::Int, dy::Int)::Vector{Char}
-	result = fill('v', -dy)
-	append!(result, fill(dx>0 ? '<' : '>', abs(dx)))
-	return result
-end
-
-function right_first(dx::Int, dy::Int)::Vector{Char}
-	ree = fill('>', -dx)
-	append!(ree, fill(dy>0 ? '^' : 'v', abs(dy)))
-	return ree
-end
+optimal_order(dx::Int, dy::Int)::Vector{Char} = vcat(
+    dx > 0 ? fill('<', dx) : Char[],
+    dy < 0 ? fill('v', -dy) : Char[],
+    dy > 0 ? fill('^', dy) : Char[],
+    dx < 0 ? fill('>', -dx) : Char[]
+)
+up_first(dx::Int, dy::Int)::Vector{Char} = vcat(fill('v', dy), fill(dx > 0 ? '<' : '>', abs(dx)))
+down_first(dx::Int, dy::Int)::Vector{Char} = vcat(fill('v', -dy), fill(dx > 0 ? '<' : '>', abs(dx)))
+right_first(dx::Int, dy::Int)::Vector{Char} = vcat(fill('>', -dx), fill(dy > 0 ? '^' : 'v', abs(dy)))
 
 function shortest_sequence(panel::Dict{Char, Pos}, code::Vector{Char}, numeric::Bool=true, start::Char='A')::Vector{Char}
 	curr = start
@@ -137,15 +112,10 @@ end
 
 filename = "data/data21.txt"
 codes = get_codes(filename)
-println(codes)
 main = calc_distances(main_panel)
 nav = calc_distances(nav_panel)
-println(nav)
 
 result = map(x -> calc_sequences(nav, main, collect(x), 2), codes)
-println(result)
 println(sum(result))
-
 result = map(x -> quick_calc_sequences(nav, main, collect(x), 25), codes)
-println(result)
 println(sum(result))
