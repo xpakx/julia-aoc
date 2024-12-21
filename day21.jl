@@ -63,8 +63,8 @@ function right_first(dx::Int, dy::Int)::Vector{Char}
 	return ree
 end
 
-function shortest_sequence(panel::Dict{Char, Pos}, code::Vector{Char}, numeric::Bool=true)::Vector{Char}
-	curr = 'A'
+function shortest_sequence(panel::Dict{Char, Pos}, code::Vector{Char}, numeric::Bool=true, start::Char='A')::Vector{Char}
+	curr = start
 	result = []
 	empty = panel[' ']
 	for letter in code
@@ -87,13 +87,50 @@ function shortest_sequence(panel::Dict{Char, Pos}, code::Vector{Char}, numeric::
 	return result
 end
 
+const QuickCode = Dict{Tuple{Char, Char}, Int}
+function quick_shortest_sequence(panel::Dict{Char, Pos}, code::QuickCode, numeric::Bool=true)::QuickCode
+	result = Dict{Tuple{Char, Char}, Int}()
+	for (i, j) in keys(code)
+		intermediate = shortest_sequence(panel, [i, j], numeric, i)
+		amount = code[(i, j)]
+		for a in 1:length(intermediate)-1
+			pair = (intermediate[a], intermediate[a+1])
+			if haskey(result, pair)
+				result[pair] += amount
+			else
+				result[pair] = amount
+			end
+		end
+	end
+	return result
+end
+
 function calc_sequences(nav::Dict{Char, Pos}, main::Dict{Char, Pos}, code::Vector{Char}, layers::Int)::Int
 	res = shortest_sequence(main, code, false)
-	for i in 1:layers
-		println(i)
+	for _ in 1:layers
 		res = shortest_sequence(nav, res)
 	end
 	len = length(res)
+	num = parse(Int, join(code)[1:end-1])
+	return len * num
+end
+
+function quick_calc_sequences(nav::Dict{Char, Pos}, main::Dict{Char, Pos}, code::Vector{Char}, layers::Int)::Int
+	code2 = Dict{Tuple{Char, Char}, Int}()
+	code2[('A', code[1])] = 1
+	for a in 1:length(code)-1
+		pair = (code[a], code[a+1])
+		if haskey(code2, pair)
+			code2[pair] += 1
+		else
+			code2[pair] = 1
+		end
+	end
+	res = quick_shortest_sequence(main, code2, false)
+	for _ in 1:layers
+		res = quick_shortest_sequence(nav, res)
+	end
+	len = sum(values(res))
 	num = parse(Int, join(code)[1:end-1])
 	return len * num
 end
@@ -109,6 +146,6 @@ result = map(x -> calc_sequences(nav, main, collect(x), 2), codes)
 println(result)
 println(sum(result))
 
-result = map(x -> calc_sequences(nav, main, collect(x), 25), codes)
+result = map(x -> quick_calc_sequences(nav, main, collect(x), 25), codes)
 println(result)
 println(sum(result))
