@@ -28,67 +28,73 @@ function calc_distances(panel::Panel)::Dict{Char, Pos}
 	return dist
 end
 
-function optimal_order(dx::Int, dy::Int)::String
-	result = ""
+function optimal_order(dx::Int, dy::Int)::Vector{Char}
+	result = []
 	if dx > 0
-		result *= repeat("<", dx)
+		append!(result, fill('<', dx))
 	end
 	if dy < 0
-		result *= repeat("v", -dy)
+		append!(result, fill('v', -dy))
 	end
 	if dy > 0
-		result *= repeat("^", dy)
+		append!(result, fill('^', dy))
 	end
 	if dx < 0
-		result *= repeat(">", -dx)
+		append!(result, fill('>', -dx))
 	end
 	return result
 end
 
-function up_first(dx::Int, dy::Int)::String
-	return repeat("^", dy) * repeat(dx>0 ? "<" : ">", abs(dx))
+function up_first(dx::Int, dy::Int)::Vector{Char}
+	ree = fill('^', dy)
+	append!(ree, fill(dx>0 ? '<' : '>', abs(dx)))
+	return ree
 end
 
-function down_first(dx::Int, dy::Int)::String
-	return repeat("v", -dy) * repeat(dx>0 ? "<" : ">", abs(dx))
+function down_first(dx::Int, dy::Int)::Vector{Char}
+	result = fill('v', -dy)
+	append!(result, fill(dx>0 ? '<' : '>', abs(dx)))
+	return result
 end
 
-function right_first(dx::Int, dy::Int)::String
-	return repeat(">", -dx) * repeat(dy>0 ? "^" : "v", abs(dy))
+function right_first(dx::Int, dy::Int)::Vector{Char}
+	ree = fill('>', -dx)
+	append!(ree, fill(dy>0 ? '^' : 'v', abs(dy)))
+	return ree
 end
 
-function shortest_sequence(panel::Dict{Char, Pos}, code::String, numeric::Bool=true)::String
+function shortest_sequence(panel::Dict{Char, Pos}, code::Vector{Char}, numeric::Bool=true)::Vector{Char}
 	curr = 'A'
-	result = ""
+	result = []
 	empty = panel[' ']
-	for letter in collect(code)
+	for letter in code
 		from = panel[curr]
 		to = panel[letter]
 		dy = from[1] - to[1]
 		dx = from[2] - to[2]
 		if !numeric && to[2] == empty[2] && from[1] == empty[1] && dy > 0
-			result *= up_first(dx, dy)
+			append!(result, up_first(dx, dy))
 		elseif numeric && to[2] == empty[2] && from[1] == empty[1] && dy < 0
-			result *= down_first(dx, dy)
+			append!(result, down_first(dx, dy))
 		elseif to[1] == empty[1] && from[2] == empty[2] && dx < 0
-			result *= right_first(dx, dy)
+			append!(result, right_first(dx, dy))
 		else
-			result *= optimal_order(dx, dy)
+			append!(result, optimal_order(dx, dy))
 		end
-		result *= 'A'
+		push!(result, 'A')
 		curr = letter
 	end
 	return result
 end
 
-function calc_sequences(nav::Dict{Char, Pos}, main::Dict{Char, Pos}, code::String)::Int
+function calc_sequences(nav::Dict{Char, Pos}, main::Dict{Char, Pos}, code::Vector{Char}, layers::Int)::Int
 	res = shortest_sequence(main, code, false)
-	res = shortest_sequence(nav, res)
-	res = shortest_sequence(nav, res)
+	for i in 1:layers
+		println(i)
+		res = shortest_sequence(nav, res)
+	end
 	len = length(res)
-	num = parse(Int, code[1:end-1])
-	println("$code: $len, $num")
-	println(res)
+	num = parse(Int, join(code)[1:end-1])
 	return len * num
 end
 
@@ -99,6 +105,10 @@ main = calc_distances(main_panel)
 nav = calc_distances(nav_panel)
 println(nav)
 
-result = map(x -> calc_sequences(nav, main, x), codes)
+result = map(x -> calc_sequences(nav, main, collect(x), 2), codes)
+println(result)
+println(sum(result))
+
+result = map(x -> calc_sequences(nav, main, collect(x), 25), codes)
 println(result)
 println(sum(result))
