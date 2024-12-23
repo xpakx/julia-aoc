@@ -14,12 +14,38 @@ function to_dict(data::Vector{Tuple{String,String}})::Dict{String, Set{String}}
 		else
 			result[key] = Set([value])
 		end
+		if haskey(result, value)
+			push!(result[value], key)
+		else
+			result[value] = Set([key])
+		end
 	end
 	return result
 end
 
+function find_triangles(data::Dict{String, Set{String}})::Int
+	result = 0
+	for node in keys(data)
+		to_add = false
+		if startswith(node, 't')
+			to_add = true
+		end
+		neighbors = collect(data[node])
+		for (i, a) in enumerate(neighbors[1:end-1])
+			for b in neighbors[i+1:end]
+				if b in data[a]
+					if to_add || startswith(a, 't') || startswith(b, 't')
+						result += 1
+					end
+				end
+			end
+		end
+		
+	end
+	return result ÷ 3
+end
+
 
 data = get_connections("data/data23.txt")
-println(data)
 dict = to_dict(data)
-println(dict)
+println(find_triangles(dict))
