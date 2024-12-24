@@ -23,6 +23,64 @@ function read_file(filename::String)
 	return (signals, gates)
 end
 
+function to_signal_dict(data::Vector{Tuple{String,Int}})::Dict{String, Int}
+	result = Dict{String, Int}()
+	for (key, value) in data
+		result[key] = value
+	end
+	return result
+end
+
+function to_gate_dict(data::Vector{Gate})::Dict{String, Gate}
+	result = Dict{String, Gate}()
+	for gate in data
+		result[gate.output] = gate
+	end
+	return result
+end
+
+function solve(gate::Gate, gates::Dict{String, Gate}, signals::Dict{String, Int})::Int
+	input1 = 0
+	if haskey(signals, gate.input1)
+		input1 = signals[gate.input1]
+	else
+		input1 = solve(gates[gate.input1], gates, signals)
+		signals[gate.input1] = input1
+	end
+
+	input2 = 0
+	if haskey(signals, gate.input2)
+		input2 = signals[gate.input2]
+	else
+		input2 = solve(gates[gate.input2], gates, signals)
+		signals[gate.input2] = input2
+	end
+	if gate.operation == "AND"
+		return input1 & input2
+	elseif gate.operation == "OR"
+		return input1 | input2
+	else
+		return input1 ⊻ input2
+	end
+end
+
+function solve1(gates::Vector{Gate}, signals::Vector{Tuple{String, Int}})::Int
+	signal_dict = to_signal_dict(signals)
+	gate_dict = to_gate_dict(gates)
+	result = 0
+	for gate in gates
+		if startswith(gate.output, 'z')
+			bit = solve(gate, gate_dict, signal_dict)
+			i = parse(Int, gate.output[2:end])
+			if bit == 1
+				result = result | (1 << i)
+			end
+		end
+	end
+	return result
+end
+
 signals, gates = read_file("data/data24.txt")
 println(signals)
 println(gates)
+println(solve1(gates, signals))
