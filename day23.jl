@@ -73,7 +73,7 @@ function explore(graph::Graph, candidate::Vector{String}, current_clique::Vector
 
 		new_candidates = [c for c in candidate[i+1:end] if c in graph[node]]
 
-			explore(graph, new_candidates, new_clique, max_clique)
+		explore(graph, new_candidates, new_clique, max_clique)
 	end
 end
 
