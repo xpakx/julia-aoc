@@ -97,10 +97,17 @@ function count_inputs(gates::Vector{Gate})::Dict{String, Int}
 	return result
 end
 
-function solve2(gates::Vector{Gate}, signals::Vector{Tuple{String, Int}})::Vector{String}
+function solve2(gates::Vector{Gate})::Vector{String}
 	inputs = count_inputs(gates)
 	err = Set{String}()
+	highest_z = 0
 	for gate in gates
+		if startswith(gate.output, 'z') 
+			i = parse(Int, gate.output[2:end])
+			if i > highest_z
+				highest_z = i
+			end
+		end
 		if startswith(gate.output, 'z') && gate.operation != "XOR"
 			push!(err, gate.output)
 		end
@@ -124,11 +131,14 @@ function solve2(gates::Vector{Gate}, signals::Vector{Tuple{String, Int}})::Vecto
 		end
 
 	end
+	z = "z" * lpad(highest_z, 2, '0')
+	if z in err
+		delete!(err, z)
+	end
+	
 	return sort(collect(err))
 end
 
 signals, gates = read_file("data/data24.txt")
-println(signals)
-println(gates)
 println(solve1(gates, signals))
-println(join(solve2(gates, signals), ','))
+println(join(solve2(gates), ','))
