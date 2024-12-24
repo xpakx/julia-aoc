@@ -80,7 +80,55 @@ function solve1(gates::Vector{Gate}, signals::Vector{Tuple{String, Int}})::Int
 	return result
 end
 
+function count_inputs(gates::Vector{Gate})::Dict{String, Int}
+	result = Dict{String, Int}()
+	for gate in gates
+		if haskey(result, gate.input1)
+			result[gate.input1] += 1
+		else
+			result[gate.input1] = 1
+		end
+		if haskey(result, gate.input2)
+			result[gate.input2] += 1
+		else
+			result[gate.input2] = 1
+		end
+	end
+	return result
+end
+
+function solve2(gates::Vector{Gate}, signals::Vector{Tuple{String, Int}})::Vector{String}
+	inputs = count_inputs(gates)
+	err = Set{String}()
+	for gate in gates
+		if startswith(gate.output, 'z') && gate.operation != "XOR"
+			push!(err, gate.output)
+		end
+		if startswith(gate.input1, 'z')
+			push!(err, gate.input1)
+		end
+		if startswith(gate.input2, 'z')
+			push!(err, gate.input2)
+		end
+		if gate.operation == "XOR" && !startswith(gate.output, 'z') && !(
+			(startswith(gate.input1, 'x') && startswith(gate.input2, 'y')) || 
+			(startswith(gate.input1, 'y') && startswith(gate.input2, 'x')))
+			push!(err, gate.output)
+		end
+		if gate.operation == "XOR" && !startswith(gate.output, 'z') && inputs[gate.output] != 2
+			push!(err, gate.output)
+		end
+		if gate.operation == "AND" && !startswith(gate.output, 'z') && inputs[gate.output] != 1 &&
+			!((gate.input1 == "x00" && gate.input2 == "y00") | (gate.input1 == "y00" && gate.input2 == "x00"))
+			push!(err, gate.output)
+		end
+
+	end
+	return sort(collect(err))
+end
+
 signals, gates = read_file("data/data24.txt")
 println(signals)
 println(gates)
 println(solve1(gates, signals))
+println(join(solve2(gates, signals), ','))
