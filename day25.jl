@@ -1,3 +1,5 @@
+using IterTools
+
 function get_data(filename::String)
 	file_content = read(filename, String)
 	data = split(strip(file_content), "\n\n")
@@ -10,7 +12,7 @@ function get_data(filename::String)
 		for line in lines
 			chars = collect(line)
 			num = map(x -> x == '#' ? 1 : 0, chars)
-			if pins == nothing
+			if isnothing(pins)
 				key =  sum(num) == 0
 				pins = num
 			else
@@ -19,9 +21,21 @@ function get_data(filename::String)
 		end
 		push!(key ? keys : locks, pins)
 	end
-	println(keys)
-	println(locks)
+	return (keys, locks)
+end
+
+function find_matches(keys, locks)::Int
+	result = 0
+	for (key, lock) in product(keys, locks)
+		test = key .+ lock
+		i = findfirst(x -> x > 7, test)
+		if isnothing(i)
+			result += 1
+		end
+	end
+	return result
 end
 
 
-get_data("data/data25.txt")
+keys, locks = get_data("data/data25.txt")
+println(find_matches(keys, locks))
